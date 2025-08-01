@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: cs-instructor-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: False
+      - key: LLM_PROVIDER
+        value: huggingface
+      - key: LLM_MODEL
+        value: microsoft/DialoGPT-medium
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+    disk:
+      name: cs-instructor-disk
+      mountPath: /app/data
+      sizeGB: 1

@@ -2,20 +2,25 @@ import os
 import pickle
 import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.docstore.document import Document
 import hashlib
 from datetime import datetime
+from ..llm.embeddings import EmbeddingFactory
 
 
 class SemanticMemory:
     """FAISS-based semantic memory for storing and retrieving documents."""
     
-    def __init__(self, index_path: str = "faiss_index", embeddings_model: str = "text-embedding-ada-002"):
+    def __init__(self, index_path: str = "faiss_index", config: Optional[Dict[str, Any]] = None):
         self.index_path = index_path
-        self.embeddings = OpenAIEmbeddings(model=embeddings_model)
+        self.config = config or {}
+        
+        # Get the best available embedding provider
+        embedding_provider = EmbeddingFactory.get_best_available_provider(**self.config)
+        self.embeddings = embedding_provider.get_embeddings()
+        
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,

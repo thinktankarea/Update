@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  cs-instructor-backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY:-}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-huggingface}
+      - LLM_MODEL=${LLM_MODEL:-microsoft/DialoGPT-medium}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://localhost:11434}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./sessions:/app/sessions
+      - ./faiss_index:/app/faiss_index
+      - ./app.log:/app/app.log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Add Ollama service for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    profiles:
+      - ollama
+
+volumes:
+  ollama_data:
